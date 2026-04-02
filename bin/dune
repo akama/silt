@@ -12,3 +12,7 @@
     else \
       printf '()'; \
     fi")))
+
+(rule
+ (with-stdout-to version.ml
+  (bash "printf 'let v = \"%s\"' \"${SILT_VERSION:-dev}\"")))

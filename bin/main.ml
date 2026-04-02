@@ -197,7 +197,7 @@ let rebuild_cmd =
 (* --- main --- *)
 let () =
   let doc = "Git-native memory for LLM coding agents" in
-  let info = Cmd.info "silt" ~version:"0.1.0" ~doc in
+  let info = Cmd.info "silt" ~version:Version.v ~doc in
   let group =
     Cmd.group info
       [ init_cmd; store_cmd; get_cmd; forget_cmd; list_cmd; search_cmd; rebuild_cmd ]

@@ -65,7 +65,7 @@ jobs:
         run: opam install . --deps-only --yes
 
       - name: Build OCaml
-        run: opam exec -- env SILT_RUST_TARGET=${{ matrix.rust_target }} dune build
+        run: opam exec -- env SILT_VERSION="v${{ github.run_number }}" SILT_RUST_TARGET=${{ matrix.rust_target }} dune build
 
       - name: Test
         run: |
