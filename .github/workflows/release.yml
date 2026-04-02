@@ -15,15 +15,15 @@ jobs:
         include:
           - os: ubuntu-latest
             rust_target: x86_64-unknown-linux-musl
-            ocaml_options: "ocaml-option-musl,ocaml-option-static"
+            ocaml_compiler: "ocaml-variants.5.3.0+options,ocaml-option-musl,ocaml-option-static"
             artifact: silt-linux-x86_64
           - os: ubuntu-24.04-arm
             rust_target: aarch64-unknown-linux-musl
-            ocaml_options: "ocaml-option-musl,ocaml-option-static"
+            ocaml_compiler: "ocaml-variants.5.3.0+options,ocaml-option-musl,ocaml-option-static"
             artifact: silt-linux-aarch64
           - os: macos-latest
             rust_target: aarch64-apple-darwin
-            ocaml_options: ""
+            ocaml_compiler: "5.3"
             artifact: silt-macos-aarch64
     runs-on: ${{ matrix.os }}
     steps:
@@ -58,12 +58,8 @@ jobs:
       - name: Install OCaml
         uses: ocaml/setup-ocaml@v3
         with:
-          ocaml-compiler: "5.3"
+          ocaml-compiler: ${{ matrix.ocaml_compiler }}
           opam-local-packages: ""
-
-      - name: Install OCaml compiler options (Linux)
-        if: matrix.ocaml_options != ''
-        run: opam install ${{ matrix.ocaml_options }} --yes
 
       - name: Install OCaml deps
         run: opam install . --deps-only --yes
