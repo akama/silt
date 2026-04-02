@@ -6,7 +6,11 @@ Memories are plain text files in your repo. They travel with `git push`/`pull`, 
 
 ## Install
 
-Download from [releases](https://github.com/akama/silt/releases/latest):
+```sh
+curl -fsSL https://raw.githubusercontent.com/akama/silt/main/install.sh | sh
+```
+
+Or download manually from [releases](https://github.com/akama/silt/releases/latest):
 
 ```sh
 # Linux x86_64
@@ -21,6 +25,8 @@ sudo mv silt /usr/local/bin/
 curl -sL https://github.com/akama/silt/releases/latest/download/silt-macos-aarch64.tar.gz | tar xz
 sudo mv silt /usr/local/bin/
 ```
+
+Re-run the install script to update. Set `SILT_INSTALL_DIR` to change the install location (default: `/usr/local/bin`).
 
 Linux binaries are fully static (musl) and run on any distro.
 
