@@ -15,15 +15,26 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
+            target: x86_64-unknown-linux-musl
+            rust_target: x86_64-unknown-linux-musl
+          - os: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-musl
+            rust_target: aarch64-unknown-linux-musl
           - os: macos-latest
             target: aarch64-apple-darwin
+            rust_target: aarch64-apple-darwin
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install musl toolchain (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y musl-tools
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_target }}
 
       - name: Cache Rust
         uses: actions/cache@v4
@@ -41,20 +52,13 @@ jobs:
       - name: Build and test Rust
         working-directory: rust/silt_embed
         run: |
-          cargo build --release
+          cargo build --release --target ${{ matrix.rust_target }}
           cargo test --release
 
       - name: Install OCaml
         uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: "5.3"
-
-      - name: Cache opam
-        uses: actions/cache@v4
-        with:
-          path: ~/.opam
-          key: opam-${{ matrix.os }}-${{ hashFiles('silt.opam') }}
-          restore-keys: opam-${{ matrix.os }}-
 
       - name: Install OCaml deps
         run: opam install . --deps-only --yes

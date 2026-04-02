@@ -14,17 +14,26 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
+            rust_target: x86_64-unknown-linux-musl
             artifact: silt-linux-x86_64
+          - os: ubuntu-24.04-arm
+            rust_target: aarch64-unknown-linux-musl
+            artifact: silt-linux-aarch64
           - os: macos-latest
-            target: aarch64-apple-darwin
+            rust_target: aarch64-apple-darwin
             artifact: silt-macos-aarch64
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install musl toolchain (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y musl-tools
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_target }}
 
       - name: Cache Rust
         uses: actions/cache@v4
@@ -33,15 +42,15 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             rust/silt_embed/target
-          key: rust-${{ matrix.target }}-${{ hashFiles('rust/silt_embed/Cargo.lock') }}
-          restore-keys: rust-${{ matrix.target }}-
+          key: rust-release-${{ matrix.rust_target }}-${{ hashFiles('rust/silt_embed/Cargo.lock') }}
+          restore-keys: rust-release-${{ matrix.rust_target }}-
 
       - name: Download model
         run: bash rust/silt_embed/download_model.sh
 
       - name: Build Rust
         working-directory: rust/silt_embed
-        run: cargo build --release
+        run: cargo build --release --target ${{ matrix.rust_target }}
 
       - name: Install OCaml
         uses: ocaml/setup-ocaml@v3
@@ -51,6 +60,10 @@ jobs:
       - name: Install OCaml deps
         run: opam install . --deps-only --yes
 
+      - name: Set Rust lib path for dune
+        run: |
+          echo "SILT_RUST_TARGET=${{ matrix.rust_target }}" >> "$GITHUB_ENV"
+
       - name: Build OCaml
         run: opam exec -- dune build
 
@@ -58,6 +71,12 @@ jobs:
         run: |
           cd rust/silt_embed && cargo test --release && cd ../..
           opam exec -- dune runtest
+
+      - name: Verify static linking (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          file _build/default/bin/main.exe
+          ldd _build/default/bin/main.exe 2>&1 || true
 
       - name: Package binary
         run: |
@@ -87,8 +106,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          VERSION="0.1.${{ github.run_number }}"
-          TAG="v${VERSION}"
+          TAG="v${{ github.run_number }}"
 
           # Collect all tarballs
           mkdir -p release
@@ -101,6 +119,6 @@ jobs:
 
           # Create release
           gh release create "${TAG}" \
-            --title "silt ${VERSION}" \
+            --title "silt ${TAG}" \
             --generate-notes \
             release/*

@@ -14,8 +14,8 @@ download-model:
     {{rust_dir}}/download_model.sh
 
 # Build the Rust static library
-build-rust:
-    cd {{rust_dir}} && source ~/.cargo/env && cargo build --release
+build-rust target="":
+    cd {{rust_dir}} && source ~/.cargo/env && cargo build --release {{ if target != "" { "--target " + target } else { "" } }}
 
 # Build the OCaml binary (requires Rust lib)
 build-ocaml:

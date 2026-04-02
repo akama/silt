@@ -6,4 +6,12 @@
 
 (rule
  (with-stdout-to c_flags.sexp
-  (bash "printf '(-L%s/rust/silt_embed/target/release -lsilt_embed -lpthread -lm -ldl)' \"$(cd %{workspace_root}/../.. && pwd -P)\"")))
+  (bash "\
+    ROOT=\"$(cd %{workspace_root}/../.. && pwd -P)\"; \
+    RUST_OUT=\"${ROOT}/rust/silt_embed/target\"; \
+    if [ -n \"${SILT_RUST_TARGET:-}\" ] && [ -d \"${RUST_OUT}/${SILT_RUST_TARGET}/release\" ]; then \
+      LIB_DIR=\"${RUST_OUT}/${SILT_RUST_TARGET}/release\"; \
+    else \
+      LIB_DIR=\"${RUST_OUT}/release\"; \
+    fi; \
+    printf '(-L%s -lsilt_embed -lpthread -lm -ldl)' \"${LIB_DIR}\"")))
