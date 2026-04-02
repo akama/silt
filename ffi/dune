@@ -1,6 +1,6 @@
 (library
  (name silt_ffi)
- (foreign_stubs (language c) (names silt_embed_stubs))
+ (foreign_stubs (language c) (names silt_embed_stubs musl_compat))
  (c_library_flags
   (:include c_flags.sexp)))
 

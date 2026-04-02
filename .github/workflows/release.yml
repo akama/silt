@@ -15,12 +15,15 @@ jobs:
         include:
           - os: ubuntu-latest
             rust_target: x86_64-unknown-linux-musl
+            ocaml_options: "ocaml-option-musl,ocaml-option-static"
             artifact: silt-linux-x86_64
           - os: ubuntu-24.04-arm
             rust_target: aarch64-unknown-linux-musl
+            ocaml_options: "ocaml-option-musl,ocaml-option-static"
             artifact: silt-linux-aarch64
           - os: macos-latest
             rust_target: aarch64-apple-darwin
+            ocaml_options: ""
             artifact: silt-macos-aarch64
     runs-on: ${{ matrix.os }}
     steps:
@@ -56,27 +59,28 @@ jobs:
         uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: "5.3"
+          opam-local-packages: ""
+
+      - name: Install OCaml compiler options (Linux)
+        if: matrix.ocaml_options != ''
+        run: opam install ${{ matrix.ocaml_options }} --yes
 
       - name: Install OCaml deps
         run: opam install . --deps-only --yes
 
-      - name: Set Rust lib path for dune
-        run: |
-          echo "SILT_RUST_TARGET=${{ matrix.rust_target }}" >> "$GITHUB_ENV"
-
       - name: Build OCaml
-        run: opam exec -- dune build
+        run: opam exec -- env SILT_RUST_TARGET=${{ matrix.rust_target }} dune build
 
       - name: Test
         run: |
           cd rust/silt_embed && cargo test --release && cd ../..
-          opam exec -- dune runtest
+          opam exec -- env SILT_RUST_TARGET=${{ matrix.rust_target }} dune runtest
 
       - name: Verify static linking (Linux)
         if: runner.os == 'Linux'
         run: |
-          file _build/default/bin/main.exe
-          ldd _build/default/bin/main.exe 2>&1 || true
+          ldd _build/default/bin/main.exe 2>&1 | grep -q "not a dynamic executable"
+          echo "Binary is fully static"
 
       - name: Package binary
         run: |

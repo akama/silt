@@ -1,4 +1,14 @@
 (executable
  (name main)
  (public_name silt)
- (libraries silt cmdliner))
+ (libraries silt cmdliner)
+ (link_flags (:include link_flags.sexp)))
+
+(rule
+ (with-stdout-to link_flags.sexp
+  (bash "\
+    if ocamlfind ocamlopt -config 2>/dev/null | grep -q musl; then \
+      printf '(-ccopt -static -cclib %s/ffi/musl_compat.o)' \"$(cd %{workspace_root} && pwd -P)\"; \
+    else \
+      printf '()'; \
+    fi")))
