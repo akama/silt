@@ -6,4 +6,4 @@
 
 (rule
  (with-stdout-to c_flags.sexp
-  (bash "printf '(-L%s/rust/silt_embed/target/release -lsilt_embed -lpthread -lm -ldl)' \"$(readlink -f %{workspace_root}/../..)\"")))
+  (bash "printf '(-L%s/rust/silt_embed/target/release -lsilt_embed -lpthread -lm -ldl)' \"$(cd %{workspace_root}/../.. && pwd -P)\"")))
