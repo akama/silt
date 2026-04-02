@@ -1,6 +1,10 @@
-let ensure_dir path =
-  if not (Sys.file_exists path) then
+let rec ensure_dir_rec path =
+  if not (Sys.file_exists path) then begin
+    ensure_dir_rec (Filename.dirname path);
     Sys.mkdir path 0o755
+  end
+
+let ensure_dir = ensure_dir_rec
 
 let init (config : Config.t) =
   ensure_dir config.root_dir;
@@ -31,6 +35,7 @@ let store (config : Config.t) ~key ~content =
   ensure_dir config.root_dir;
   ensure_dir config.memory_dir;
   let path = memory_path config key in
+  ensure_dir (Filename.dirname path);
   let oc = open_out path in
   output_string oc content;
   close_out oc
@@ -54,12 +59,21 @@ let forget (config : Config.t) ~key =
     false
 
 let list_keys (config : Config.t) =
-  if Sys.file_exists config.memory_dir then
-    Sys.readdir config.memory_dir
-    |> Array.to_list
-    |> List.sort String.compare
-  else
-    []
+  let rec walk prefix dir =
+    if Sys.file_exists dir then
+      Sys.readdir dir
+      |> Array.to_list
+      |> List.concat_map (fun name ->
+        let path = Filename.concat dir name in
+        let key = if prefix = "" then name else prefix ^ "/" ^ name in
+        if Sys.is_directory path then
+          walk key path
+        else
+          [key])
+    else
+      []
+  in
+  walk "" config.memory_dir |> List.sort String.compare
 
 let list_all (config : Config.t) =
   list_keys config
@@ -80,14 +94,7 @@ let install_skill () =
     else
       `Skipped_modified
   end else begin
-    (* mkdir -p .claude/skills/silt *)
-    let rec ensure_dirs path =
-      if not (Sys.file_exists path) then begin
-        ensure_dirs (Filename.dirname path);
-        Sys.mkdir path 0o755
-      end
-    in
-    ensure_dirs skill_dir;
+    ensure_dir skill_dir;
     let oc = open_out skill_path in
     output_string oc skill_content;
     close_out oc;
