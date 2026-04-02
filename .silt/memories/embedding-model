@@ -1,0 +1,1 @@
+Uses all-MiniLM-L6-v2 (384-dim, ~87MB safetensors). Weights are embedded into the Rust binary via include_bytes! at compile time. Model files are gitignored and downloaded via rust/silt_embed/download_model.sh from HuggingFace. Inference uses candle (pure Rust, no ONNX). Output vectors are L2-normalized.

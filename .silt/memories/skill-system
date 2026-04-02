@@ -1,0 +1,1 @@
+The Claude Code skill is embedded in the binary at build time from skill/silt.md using an OCaml quoted string ({silt_skill|...|silt_skill}). Generated as lib/skill_content.ml by a dune rule. Installed to .claude/skills/silt/SKILL.md. Won't overwrite user modifications unless --force is passed.

@@ -1,0 +1,1 @@
+Release versions are just vN (v1, v2, v3...) using github.run_number. The binary version is injected at build time via the SILT_VERSION env var — dune generates bin/version.ml from it. Defaults to 'dev' for local builds.

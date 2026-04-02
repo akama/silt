@@ -1,0 +1,1 @@
+This repo uses jj (not git) for version control. Use jj describe to set commit messages, jj new to start a new change. Model files and build artifacts are gitignored. The Rust crate must not have a nested .git directory (cargo init creates one by default) or jj won't track its files.

@@ -1,0 +1,1 @@
+OCaml binary links a Rust static library (libsilt_embed.a) via C FFI. Build order: Rust first (cargo build --release), then OCaml (dune build). The ffi/dune file has a shell rule to resolve the absolute path to the Rust .a since dune's workspace_root resolves inside _build/.

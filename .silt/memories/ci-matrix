@@ -1,0 +1,1 @@
+CI builds 3 targets: linux-x86_64 (ubuntu-latest, musl), linux-aarch64 (ubuntu-24.04-arm, musl), macos-aarch64 (macos-latest). The release workflow creates a GitHub release with tarballs and SHA256SUMS. The ocaml-compiler field in setup-ocaml must include musl/static options at creation time, not installed after.
