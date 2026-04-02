@@ -1,3 +1,12 @@
 (library
  (name silt)
  (libraries silt_ffi yaml unix))
+
+(rule
+ (deps ../skill/silt.md)
+ (action
+  (with-stdout-to skill_content.ml
+   (bash "\
+     printf 'let text = {silt_skill|'; \
+     cat %{deps}; \
+     printf '|silt_skill}'"))))

@@ -1,3 +1,8 @@
+---
+name: silt
+description: Search and store project memory. Use before making changes to check for existing knowledge, and after learning something non-obvious.
+---
+
 # Silt — project memory
 
 You have access to `silt`, a semantic memory tool for this repository. Memories are plain text files stored in `.silt/memories/` and tracked by git.

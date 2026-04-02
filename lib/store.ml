@@ -64,3 +64,32 @@ let list_keys (config : Config.t) =
 let list_all (config : Config.t) =
   list_keys config
   |> List.filter_map (fun key -> get config ~key)
+
+let skill_content = Skill_content.text
+
+let skill_dir = Filename.concat ".claude" (Filename.concat "skills" "silt")
+let skill_path = Filename.concat skill_dir "SKILL.md"
+
+let install_skill () =
+  if Sys.file_exists skill_path then begin
+    let ic = open_in skill_path in
+    let existing = In_channel.input_all ic in
+    close_in ic;
+    if existing = skill_content then
+      `Already_current
+    else
+      `Skipped_modified
+  end else begin
+    (* mkdir -p .claude/skills/silt *)
+    let rec ensure_dirs path =
+      if not (Sys.file_exists path) then begin
+        ensure_dirs (Filename.dirname path);
+        Sys.mkdir path 0o755
+      end
+    in
+    ensure_dirs skill_dir;
+    let oc = open_out skill_path in
+    output_string oc skill_content;
+    close_out oc;
+    `Installed
+  end

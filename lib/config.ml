@@ -17,3 +17,6 @@ let default () = make default_root
 
 let index_path config =
   Filename.concat config.cache_dir "index.bin"
+
+let skill_path config =
+  Filename.concat config.root_dir "skill.md"

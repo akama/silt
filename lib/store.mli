@@ -15,3 +15,10 @@ val list_keys : Config.t -> string list
 
 (** List all memories with content. *)
 val list_all : Config.t -> Memory.t list
+
+(** Install the skill file to .claude/skills/silt/SKILL.md.
+    Returns: `Installed, `Already_current, or `Skipped_modified. *)
+val install_skill : unit -> [ `Installed | `Already_current | `Skipped_modified ]
+
+(** The embedded skill content. *)
+val skill_content : string
