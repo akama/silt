@@ -1,0 +1,3 @@
+(library
+ (name silt)
+ (libraries silt_ffi yaml unix))

@@ -1,0 +1,6 @@
+_build/
+*.install
+.merlin
+.silt/.cache/
+rust/silt_embed/target/
+rust/silt_embed/model/

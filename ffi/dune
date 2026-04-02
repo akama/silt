@@ -1,0 +1,9 @@
+(library
+ (name silt_ffi)
+ (foreign_stubs (language c) (names silt_embed_stubs))
+ (c_library_flags
+  (:include c_flags.sexp)))
+
+(rule
+ (with-stdout-to c_flags.sexp
+  (bash "printf '(-L%s/rust/silt_embed/target/release -lsilt_embed -lpthread -lm -ldl)' \"$(readlink -f %{workspace_root}/../..)\"")))

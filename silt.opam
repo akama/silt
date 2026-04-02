@@ -1,0 +1,13 @@
+opam-version: "2.0"
+name: "silt"
+version: "0.1.0"
+synopsis: "Git-native memory for LLM coding agents"
+depends: [
+  "ocaml" {>= "5.0"}
+  "dune" {>= "3.0"}
+  "cmdliner" {>= "1.2"}
+  "yaml"
+]
+build: [
+  ["dune" "build" "-p" name "-j" jobs]
+]
