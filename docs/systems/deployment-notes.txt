@@ -1,0 +1,40 @@
+Deployment Notes for Silt
+
+The silt binary is distributed as a single static executable per platform.
+There are no runtime dependencies, shared libraries, or config files required.
+
+Release Artifacts:
+- silt-linux-x86_64.tar.gz: Fully static musl binary, works on any Linux distro
+- silt-linux-aarch64.tar.gz: ARM64 Linux, also fully static
+- silt-macos-aarch64.tar.gz: Apple Silicon, dynamically linked (macOS does not support static binaries)
+
+Installation:
+Users can install via the install script (install.sh) which auto-detects
+platform, downloads the latest release, verifies SHA256 checksums, and
+places the binary in /usr/local/bin. Re-running the script handles updates.
+
+The install script uses curl for downloads and sha256sum (or shasum on macOS)
+for verification. It follows GitHub release redirects to find the latest tag.
+
+Version Numbering:
+Releases are tagged vN where N is github.run_number, a monotonically
+increasing integer. The binary reports this version via --version.
+Local development builds report "dev" instead.
+
+Binary Size:
+The binary is approximately 117-119MB because it includes the embedded
+model weights (~87MB safetensors for all-MiniLM-L6-v2) plus the OCaml
+runtime, Rust embedding engine, and all statically linked C libraries.
+
+Platform Support:
+We currently build for three targets. Adding new platforms requires:
+1. A GitHub Actions runner for the target architecture
+2. A Rust target triple (e.g., x86_64-unknown-linux-musl)
+3. An OCaml opam switch configured for that target
+4. For Linux: musl toolchain for static linking
+
+Known Limitations:
+- No Windows support (OCaml + musl toolchain not available)
+- No GPU acceleration (candle runs on CPU only)
+- macOS binary is not fully static (Apple does not ship static libc)
+- The binary is large due to embedded model weights

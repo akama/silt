@@ -1,0 +1,42 @@
+Frequently Asked Questions
+
+Q: Why is the binary so large?
+A: The all-MiniLM-L6-v2 model weights (~87MB) are compiled directly into
+the binary via Rust's include_bytes! macro. This eliminates the need for
+runtime model downloads or external files, but makes the binary ~117MB.
+
+Q: Can I use a different embedding model?
+A: Not without rebuilding from source. The model is baked in at compile
+time. Swapping models would require changing the Rust crate to load a
+different safetensors file and adjusting the embedding dimensions.
+
+Q: Why OCaml + Rust instead of just Rust?
+A: OCaml handles the CLI, file I/O, chunking, and search logic well with
+its strong type system and pattern matching. Rust handles the ML inference
+via candle, which is a mature pure-Rust ML framework. The C FFI between
+them is thin and stable.
+
+Q: How does silt handle merge conflicts?
+A: The .silt/config file is small and rarely changes. The embedding index
+in .silt/.cache/ is gitignored and rebuilt locally. The actual docs being
+indexed are regular repo files, so they follow normal git merge behavior.
+
+Q: What if my docs are in multiple directories?
+A: Run silt init with multiple paths: silt init docs/ wiki/ notes/
+All paths will be scanned recursively.
+
+Q: Does silt watch for file changes?
+A: No. The index is updated lazily when you run silt search or silt rebuild.
+There is no background daemon or file watcher. This keeps the tool simple
+and stateless between invocations.
+
+Q: What file types are indexed?
+A: By default, .md and .txt files. Markdown files get heading-aware chunking
+with breadcrumb trails. Plain text files get paragraph-based chunking.
+Binary files are automatically detected and skipped.
+
+Q: How accurate is the semantic search?
+A: It depends on the query and document content. The model works best with
+natural language descriptions. For exact identifier matching (function names,
+error messages), use --keyword mode instead. The default hybrid mode combines
+both approaches.
