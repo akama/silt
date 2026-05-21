@@ -32,6 +32,11 @@ let init_cmd =
   in
   let term =
     Term.(const (fun paths no_skill ->
+      let bad = List.filter (fun p -> not (Sys.file_exists p)) paths in
+      if bad <> [] then begin
+        Printf.eprintf "Error: path(s) not found: %s\n" (String.concat ", " bad);
+        exit 1
+      end;
       let config = Silt.Store.init paths in
       Printf.printf "Initialized silt in %s/\n" config.silt_dir;
       Printf.printf "Indexing: %s\n" (String.concat ", " config.paths);
