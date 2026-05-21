@@ -1,8 +1,8 @@
 # silt
 
-Git-native memory for LLM coding agents. A single static binary with embedded semantic search — no dependencies, no model downloads, no server.
+Semantic search over your project docs. A single static binary with an embedded sentence transformer — no dependencies, no model downloads, no server.
 
-Memories are plain text files in your repo. They travel with `git push`/`pull`, branch with your code, and merge without conflicts. Search is powered by an embedded sentence transformer (all-MiniLM-L6-v2) compiled directly into the binary.
+Point silt at a folder of markdown or text files and search by meaning or keyword. Documents are chunked by heading, embedded locally, and searched via cosine similarity. The index updates incrementally.
 
 ## Install
 
@@ -33,52 +33,47 @@ Linux binaries are fully static (musl) and run on any distro.
 ## Quick start
 
 ```sh
-silt init                                      # set up .silt/ in your repo
-silt store auth -m "JWT RS256, keys via Vault"  # save a memory
-silt store db -m "Postgres, UUID primary keys"  # save another
-silt search "how does authentication work"      # semantic search
-silt get auth                                   # exact key lookup
-silt list                                       # list all keys
-silt forget auth                                # remove a memory
+silt init docs/                              # index a folder
+silt search "how does authentication work"   # hybrid search
+silt search "musl" --keyword                 # exact term matching
+silt search "deploy process" --semantic      # embedding similarity
+silt status                                  # show indexed files/chunks
+silt rebuild                                 # force reindex
 ```
 
 ## How it works
 
 ```
+docs/                    ← your existing markdown/text files
+  DESIGN.md
+  systems/
+    auth.md
+    deploy.md
 .silt/
-  memories/
-    auth          ← plain text, one file per key
-    db
-  .cache/         ← gitignored, rebuilt on demand
+  config                 ← paths, extensions, excludes
+  .cache/                ← gitignored, rebuilt on demand
     index.bin
 ```
 
-- **Store** writes a text file to `.silt/memories/<key>`
-- **Search** embeds your query and compares against all memories using cosine similarity
-- **The embedding index** is cached locally and rebuilt automatically when memories change
-- **Branching** just works — memories are files in git, so they follow the DAG
+- **Init** points silt at one or more directories
+- **Search** chunks your docs by heading, embeds them, and finds the best matches
+- **The index** updates incrementally — only changed files get re-embedded
+- **Three modes**: hybrid (default), `--semantic` only, `--keyword` only
 
-Memories support optional YAML frontmatter for tags:
+Results show file path, line number, and heading breadcrumb:
 
 ```
----
-tags: [auth, security]
-created: 2025-03-15
----
-The auth service uses JWT with RS256 signing.
-Keys are rotated monthly via Vault.
+docs/systems/auth.md:15 > auth.md > Auth > JWT tokens  (0.87)
+  Auth uses JWT RS256. Keys rotated monthly via Vault...
 ```
 
 ## Agent integration
 
-Silt is designed to be called by LLM coding agents. Add to your `CLAUDE.md` or equivalent:
+Silt is designed to be called by LLM coding agents. Run `silt skill --install` to add a Claude Code skill, or add to your `CLAUDE.md`:
 
 ```markdown
 Before making changes, run:
   silt search "<what you're about to do>"
-
-After learning something important, run:
-  silt store <key> -m "<what you learned>"
 ```
 
 Use `--json` for structured output:
@@ -90,7 +85,7 @@ silt search "deployment" --json
 ```json
 {
   "results": [
-    {"key": "deploy", "score": 0.92, "content": "Kubernetes via ArgoCD...", "tags": ["infra"]}
+    {"file": "docs/deploy.md", "breadcrumb": "deploy.md > Process", "start_line": 5, "end_line": 20, "score": 0.87, "preview": "Deploy via ArgoCD..."}
   ]
 }
 ```
@@ -100,7 +95,9 @@ silt search "deployment" --json
 | Flag | Default | Description |
 |------|---------|-------------|
 | `--top-k` | 5 | Number of results |
-| `--threshold` | 0.5 | Minimum similarity score |
+| `--threshold` | 0.3 | Minimum score |
+| `--semantic` | off | Embedding similarity only |
+| `--keyword` | off | Exact term matching only |
 | `--json` | off | JSON output |
 
 ## Building from source
@@ -114,7 +111,7 @@ just test     # run all tests
 just run -- search "query"
 ```
 
-See the [design doc](docs/DESIGN.md) for architecture details.
+See [docs/systems/](docs/systems/) for architecture details.
 
 ## License
 
