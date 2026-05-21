@@ -184,7 +184,9 @@ let chunk_markdown file content =
         (* Pop headings at this level or deeper *)
         heading_stack := List.filter (fun (l, _) -> l < level) !heading_stack;
         heading_stack := (level, text) :: !heading_stack;
-        buf_start := !line_num
+        buf_start := !line_num;
+        (* Include the heading text in the chunk body for keyword search *)
+        Buffer.add_string buf text
       | None ->
         if Buffer.length buf > 0 then Buffer.add_char buf '\n';
         Buffer.add_string buf line;

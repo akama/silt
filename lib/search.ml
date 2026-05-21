@@ -220,14 +220,23 @@ let keyword_score query_tokens chunk_tokens =
 
 let preview_text body =
   let maxlen = 80 in
-  let first_line =
-    match String.split_on_char '\n' body with
-    | l :: _ -> String.trim l
+  let lines = String.split_on_char '\n' body in
+  (* Skip past short heading-only first lines to find substantive content *)
+  let rec find_preview = function
     | [] -> ""
+    | l :: rest ->
+      let trimmed = String.trim l in
+      if trimmed = "" then find_preview rest
+      else if String.length trimmed < 30 && rest <> [] then
+        (* Short first line (likely a heading), try the next *)
+        let next = find_preview rest in
+        if next <> "" then next else trimmed
+      else trimmed
   in
-  if String.length first_line > maxlen then
-    String.sub first_line 0 maxlen ^ "..."
-  else first_line
+  let line = find_preview lines in
+  if String.length line > maxlen then
+    String.sub line 0 maxlen ^ "..."
+  else line
 
 let search config ~query ~mode ~top_k ~threshold =
   let idx = update_index config in
