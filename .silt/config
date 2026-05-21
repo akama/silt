@@ -1,0 +1,11 @@
+paths:
+  - docs/
+extensions:
+  - .md
+  - .txt
+exclude:
+  - _build
+  - .git
+  - .jj
+  - node_modules
+  - .silt
