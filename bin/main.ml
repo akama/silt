@@ -23,8 +23,8 @@ let init_cmd =
   let doc = "Initialize silt to index the given paths." in
   let info = Cmd.info "init" ~doc in
   let paths_arg =
-    Arg.(value & pos_all string [] & info [] ~docv:"PATH"
-           ~doc:"Directories or files to index (default: current directory).")
+    Arg.(non_empty & pos_all string [] & info [] ~docv:"PATH"
+           ~doc:"Directories or files to index.")
   in
   let no_skill_flag =
     Arg.(value & flag & info ["no-skill"]
@@ -32,7 +32,6 @@ let init_cmd =
   in
   let term =
     Term.(const (fun paths no_skill ->
-      let paths = if paths = [] then ["."] else paths in
       let config = Silt.Store.init paths in
       Printf.printf "Initialized silt in %s/\n" config.silt_dir;
       Printf.printf "Indexing: %s\n" (String.concat ", " config.paths);
