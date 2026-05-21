@@ -201,13 +201,41 @@ let chunk_markdown file content =
   List.rev !chunks
 
 let chunk_plaintext file content =
-  let sub_chunks = split_large_body content 1 in
   let basename = Filename.basename file in
-  List.map (fun (body, start_line, end_line) ->
-    { file; breadcrumb = basename; start_line; end_line;
-      body = String.trim body })
-    sub_chunks
-  |> List.filter (fun c -> c.body <> "")
+  let lines = String.split_on_char '\n' content in
+  let chunks = ref [] in
+  let buf = Buffer.create 256 in
+  let buf_start = ref 1 in
+  let line_num = ref 0 in
+  let flush () =
+    let body = String.trim (Buffer.contents buf) in
+    if body <> "" then begin
+      let wc = word_count body in
+      if wc > max_words then begin
+        (* Split oversized paragraphs *)
+        let sub_chunks = split_large_body body !buf_start in
+        List.iter (fun (sub_body, s, e) ->
+          chunks := { file; breadcrumb = basename; start_line = s;
+                      end_line = e; body = String.trim sub_body } :: !chunks)
+          sub_chunks
+      end else
+        chunks := { file; breadcrumb = basename; start_line = !buf_start;
+                    end_line = !line_num; body } :: !chunks
+    end;
+    Buffer.clear buf;
+    buf_start := !line_num + 1
+  in
+  List.iter (fun line ->
+    incr line_num;
+    if String.trim line = "" then
+      flush ()
+    else begin
+      if Buffer.length buf > 0 then Buffer.add_char buf '\n';
+      Buffer.add_string buf line
+    end)
+    lines;
+  flush ();
+  List.rev !chunks
 
 let chunk_file file content =
   if Filename.check_suffix file ".md" then
