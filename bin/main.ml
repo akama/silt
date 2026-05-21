@@ -149,7 +149,11 @@ let status_cmd =
       let files, chunks = Silt.Search.status config in
       Printf.printf "Paths:  %s\n" (String.concat ", " config.paths);
       Printf.printf "Files:  %d\n" files;
-      Printf.printf "Chunks: %d\n" chunks)
+      Printf.printf "Chunks: %d\n" chunks;
+      if files = 0 then
+        Printf.printf "\nNo files found. Check that the configured paths contain .md or .txt files.\n"
+      else if chunks = 0 then
+        Printf.printf "\nNo chunks indexed. Run 'silt rebuild' to index.\n")
     $ const ())
   in
   Cmd.v info term
