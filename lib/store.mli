@@ -1,23 +1,7 @@
-(** Initialize silt in the current directory. *)
-val init : Config.t -> unit
+(** Initialize silt with the given paths. Creates .silt/ and config. *)
+val init : string list -> Config.t
 
-(** Store a memory. Overwrites if key exists. *)
-val store : Config.t -> key:string -> content:string -> unit
-
-(** Get a memory by exact key. *)
-val get : Config.t -> key:string -> Memory.t option
-
-(** Remove a memory. *)
-val forget : Config.t -> key:string -> bool
-
-(** List all memory keys. *)
-val list_keys : Config.t -> string list
-
-(** List all memories with content. *)
-val list_all : Config.t -> Memory.t list
-
-(** Install the skill file to .claude/skills/silt/SKILL.md.
-    Returns: `Installed, `Already_current, or `Skipped_modified. *)
+(** Install the skill file to .claude/skills/silt/SKILL.md. *)
 val install_skill : unit -> [ `Installed | `Already_current | `Skipped_modified ]
 
 (** The embedded skill content. *)

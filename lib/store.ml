@@ -1,16 +1,15 @@
-let rec ensure_dir_rec path =
+let rec ensure_dir path =
   if not (Sys.file_exists path) then begin
-    ensure_dir_rec (Filename.dirname path);
+    ensure_dir (Filename.dirname path);
     Sys.mkdir path 0o755
   end
 
-let ensure_dir = ensure_dir_rec
-
-let init (config : Config.t) =
-  ensure_dir config.root_dir;
-  ensure_dir config.memory_dir;
+let init paths =
+  let config = Config.make paths in
+  ensure_dir config.silt_dir;
   ensure_dir config.cache_dir;
-  (* Add .cache to .gitignore if not already present *)
+  Config.write_config config;
+  (* Add cache dir to .gitignore *)
   let gitignore = ".gitignore" in
   let entry = Printf.sprintf "%s/" config.cache_dir in
   let already =
@@ -26,59 +25,10 @@ let init (config : Config.t) =
     let oc = open_out_gen [Open_append; Open_creat] 0o644 gitignore in
     Printf.fprintf oc "%s\n" entry;
     close_out oc
-  end
+  end;
+  config
 
-let memory_path (config : Config.t) key =
-  Filename.concat config.memory_dir key
-
-let store (config : Config.t) ~key ~content =
-  ensure_dir config.root_dir;
-  ensure_dir config.memory_dir;
-  let path = memory_path config key in
-  ensure_dir (Filename.dirname path);
-  let oc = open_out path in
-  output_string oc content;
-  close_out oc
-
-let get (config : Config.t) ~key =
-  let path = memory_path config key in
-  if Sys.file_exists path then begin
-    let ic = open_in path in
-    let content = In_channel.input_all ic in
-    close_in ic;
-    Some (Memory.parse ~key content)
-  end else
-    None
-
-let forget (config : Config.t) ~key =
-  let path = memory_path config key in
-  if Sys.file_exists path then begin
-    Sys.remove path;
-    true
-  end else
-    false
-
-let list_keys (config : Config.t) =
-  let rec walk prefix dir =
-    if Sys.file_exists dir then
-      Sys.readdir dir
-      |> Array.to_list
-      |> List.concat_map (fun name ->
-        let path = Filename.concat dir name in
-        let key = if prefix = "" then name else prefix ^ "/" ^ name in
-        if Sys.is_directory path then
-          walk key path
-        else
-          [key])
-    else
-      []
-  in
-  walk "" config.memory_dir |> List.sort String.compare
-
-let list_all (config : Config.t) =
-  list_keys config
-  |> List.filter_map (fun key -> get config ~key)
-
+(* Skill installation *)
 let skill_content = Skill_content.text
 
 let skill_dir = Filename.concat ".claude" (Filename.concat "skills" "silt")

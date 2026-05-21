@@ -1,6 +1,6 @@
 (test
  (name test_silt)
- (libraries silt)
+ (libraries silt str)
  (link_flags (:include link_flags.sexp)))
 
 (rule
