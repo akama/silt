@@ -112,7 +112,9 @@ let search_cmd =
               (if i < n - 1 then "," else ""))
           results;
         Printf.printf "]}\n"
-      end else
+      end else if results = [] then
+        Printf.eprintf "No results found.\n"
+      else
         List.iter
           (fun (r : Silt.Search.result) ->
             Printf.printf "%s:%d > %s  (%.2f)\n  %s\n"
