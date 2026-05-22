@@ -74,7 +74,7 @@ let search_cmd =
   in
   let threshold_arg =
     Arg.(value & opt float 0.3 & info ["threshold"] ~docv:"FLOAT"
-           ~doc:"Minimum score (default: 0.3)")
+           ~doc:"Minimum score, 0.0 to 1.0 (default: 0.3)")
   in
   let json_flag =
     Arg.(value & flag & info ["json"] ~doc:"Output as JSON")
@@ -91,6 +91,10 @@ let search_cmd =
     Term.(const (fun query top_k threshold json semantic keyword ->
       if String.trim query = "" then begin
         Printf.eprintf "Error: search query cannot be empty.\n";
+        exit 1
+      end;
+      if threshold < 0.0 || threshold > 1.0 then begin
+        Printf.eprintf "Error: --threshold must be between 0.0 and 1.0 (got %.2f).\n" threshold;
         exit 1
       end;
       let config = load_config () in
