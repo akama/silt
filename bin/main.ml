@@ -89,8 +89,16 @@ let search_cmd =
   in
   let term =
     Term.(const (fun query top_k threshold json semantic keyword ->
+      if String.trim query = "" then begin
+        Printf.eprintf "Error: search query cannot be empty.\n";
+        exit 1
+      end;
       let config = load_config () in
       let mode =
+        if semantic && keyword then begin
+          Printf.eprintf "Error: --semantic and --keyword cannot be used together.\n";
+          exit 1
+        end;
         if semantic then Silt.Search.Semantic
         else if keyword then Silt.Search.Keyword
         else Silt.Search.Hybrid
