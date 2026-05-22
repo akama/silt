@@ -158,6 +158,10 @@ let status_cmd =
   let term =
     Term.(const (fun () ->
       let config = load_config () in
+      let missing = List.filter (fun p -> not (Sys.file_exists p)) config.paths in
+      List.iter (fun p ->
+        Printf.eprintf "Warning: configured path does not exist: %s\n" p)
+        missing;
       let files, chunks = Silt.Search.status config in
       Printf.printf "Paths:  %s\n" (String.concat ", " config.paths);
       Printf.printf "Files:  %d\n" files;
