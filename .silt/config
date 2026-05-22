@@ -1,5 +1,5 @@
 paths:
-  - docs/
+  - /tmp/empty_docs
 extensions:
   - .md
   - .txt
